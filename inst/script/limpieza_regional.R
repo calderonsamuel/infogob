@@ -2,9 +2,7 @@ library(tidyverse)
 library(readxl)
 library(janitor)
 
-unzip("inst/data-raw/Base_de_datos_INFOgob.zip", exdir = "inst/data-raw")
-
-# congresal_pattern <- "(CONGRESAL)|(CONSTITUYENTE)|(DIPUTADOS)"
+# unzip("inst/data-raw/Base_de_datos_INFOgob.zip", exdir = "inst/data-raw")
 
 files <- list.files("inst/data-raw", recursive = TRUE, full.names = TRUE) %>% .[str_detect(., "REGIONAL")]
 filenames <- list.files("inst/data-raw", recursive = TRUE) %>%
@@ -30,13 +28,15 @@ padrones <- listado_informacion %>%
 autoridades <- listado_informacion %>%
   filter(tipo_dato == "Autoridades") %>%
   mutate(data = map(files, read_excel) %>% map(clean_names)) %>%
+  mutate(data = map(data, rename_with, ~str_remove(.x, "_obtenidos_por_la")))%>%
   select(eleccion, data) %>%
   unnest(data)
 
 candidatos <- listado_informacion %>%
   filter(tipo_dato == "Candidatos") %>%
   mutate(data = map(files, read_excel) %>% map(clean_names)) %>%
+  mutate(data = map(data, rename_with, ~str_remove(.x, "_obtenidos_por_la")))%>%
   select(eleccion, data) %>%
   unnest(data)
 
-# TODO: ISP congresal
+# TODO: ISP regional
